@@ -1,0 +1,24 @@
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+html {
+  @apply scrollbar-thin;
+  scrollbar-color: theme('colors.neutral.900') theme('colors.white');
+}
+
+body {
+  @apply text-sm font-light tracking-[0.01em] text-neutral-900 leading-6 overflow-x-hidden;
+}
+
+[x-cloak] {
+  @apply hidden!;
+}
+
+.added_to_cart {
+  @apply hidden;
+}

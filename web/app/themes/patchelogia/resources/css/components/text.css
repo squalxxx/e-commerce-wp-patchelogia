@@ -1,0 +1,9 @@
+@layer components {
+  .text-primary {
+    @apply font-manrope text-[0.625rem] font-bold uppercase tracking-[0.2em];
+  }
+
+  .text-heading {
+    @apply font-infant text-5xl font-light italic -tracking-[0.02em];
+  }
+}

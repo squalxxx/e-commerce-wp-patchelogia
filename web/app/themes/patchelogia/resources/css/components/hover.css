@@ -1,0 +1,44 @@
+@layer components {
+  /* Underline */
+  .hover-underline {
+    @apply relative;
+  }
+
+  /* Opacity */
+  .hover-opacity {
+    @apply transition-opacity hover:opacity-70;
+  }
+
+  /* Roll */
+  .hover-roll__container {
+    @apply relative block overflow-hidden h-[1em] leading-none;
+  }
+
+  .hover-roll__items {
+    @apply flex flex-col gap-y-0.5 transition-transform duration-500;
+  }
+
+  .hover-roll__item {
+    @apply block;
+  }
+}
+
+.hover-underline::after {
+  content: '';
+  @apply absolute left-0 -bottom-[3px] h-px w-0 bg-neutral-900 transition-[width] duration-300;
+}
+
+@media (hover: hover) {
+  .hover-paused:hover,
+  .hover-paused:hover > * {
+    animation-play-state: paused;
+  }
+
+  .hover-underline:hover::after {
+    @apply w-full;
+  }
+
+  .hover-roll:hover .hover-roll__items {
+    transform: translateY(-50%);
+  }
+}

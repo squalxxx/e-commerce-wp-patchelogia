@@ -1,0 +1,27 @@
+@layer components {
+  .shading-image,
+  .gradient-shading-image {
+    @apply relative;
+  }
+}
+
+.shading-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 0;
+}
+
+.gradient-shading-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(26, 24, 20, 0.72) 0%,
+    rgba(26, 24, 20, 0.28) 45%,
+    rgba(26, 24, 20, 0.04) 100%
+  );
+  z-index: 0;
+}

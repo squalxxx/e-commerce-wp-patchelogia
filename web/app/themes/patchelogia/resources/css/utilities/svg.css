@@ -1,0 +1,9 @@
+.svg-current > svg *[fill] {
+  fill: currentColor;
+}
+.svg-current > svg *[stroke] {
+  stroke: currentColor;
+}
+.svg-current > svg * {
+  transition-property: fill, stroke;
+}

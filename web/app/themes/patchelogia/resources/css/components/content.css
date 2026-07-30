@@ -1,0 +1,30 @@
+.page-content p:not(:last-child),
+.page-content ul:not(:last-child),
+.page-content h3:not(:last-child) {
+  @apply mb-2;
+}
+
+.page-content p,
+.page-content ul {
+  @apply text-justify;
+}
+
+.page-content h3:not(:first-child) {
+  @apply mt-6;
+}
+
+.page-content h3 {
+  @apply text-xl font-medium;
+}
+
+.page-content ul {
+  @apply list-disc list-inside;
+}
+
+.page-ambassadorship .wp-block-paragraph {
+  @apply text-center leading-6 text-black/60;
+}
+
+.about__content h4 {
+  @apply py-7 border-y border-zinc-200 font-infant text-4xl font-light italic -tracking-[0.02em];
+}

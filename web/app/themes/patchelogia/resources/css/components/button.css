@@ -1,0 +1,10 @@
+@layer components {
+  .button {
+    @apply flex items-center justify-center cursor-pointer rounded-full border border-neutral-900 bg-neutral-900 px-8 py-4 text-[0.625rem] font-light uppercase tracking-[0.2em] text-white
+		  transition-colors hover:bg-white hover:text-neutral-900;
+  }
+
+  .button--inverted {
+    @apply bg-white text-neutral-900 border-zinc-200 hover:bg-neutral-900 hover:text-white;
+  }
+}

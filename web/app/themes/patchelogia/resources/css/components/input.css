@@ -1,0 +1,21 @@
+@layer components {
+  .input {
+    @apply font-light transition-colors;
+  }
+
+  .input--rounded {
+    @apply text-xs rounded-full border border-zinc-200 bg-white px-8 py-4;
+  }
+
+  .input--sharpened {
+    @apply text-sm border-b border-zinc-200 py-4;
+  }
+
+  .input:focus {
+    @apply outline-0 border-neutral-900;
+  }
+}
+
+.checkout-form__billing-fields #billing_country_field {
+  @apply hidden;
+}

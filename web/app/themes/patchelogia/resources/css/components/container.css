@@ -1,0 +1,18 @@
+@layer components {
+  .align-full {
+    max-width: 1920px !important;
+    margin-inline: calc(50% - 50vw) !important;
+  }
+
+  .custom-container {
+    @apply px-3 mx-auto w-full max-w-[1600px];
+  }
+
+  .custom-md-container {
+    @apply px-3 mx-auto w-full max-w-7xl;
+  }
+
+  .custom-sm-container {
+    @apply px-3 mx-auto w-full max-w-[1024px];
+  }
+}
