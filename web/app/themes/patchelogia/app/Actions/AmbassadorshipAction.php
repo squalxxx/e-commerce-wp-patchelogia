@@ -3,9 +3,9 @@
 namespace App\Actions;
 
 use App\Mail\AmbassadorshipMail;
-use App\Models\Ambassadors;
+use App\Models\Ambassador;
 
-class AmbassadorshipAction extends Action
+class AmbassadorshipAction extends AbstractFormAction
 {
 	protected function sanitize(array $data): array
 	{
@@ -15,13 +15,17 @@ class AmbassadorshipAction extends Action
 			'email' => sanitize_email($data['email'] ?? ''),
 			'phone' => sanitize_text_field($data['phone'] ?? ''),
 			'comment' => sanitize_textarea_field($data['comment'] ?? ''),
-			'agreement' => !empty($data['agreement']),
+			'agreement' => ! empty($data['agreement']),
 		];
 	}
 
 	protected function validate(array $data): ?string
 	{
-		if ($data['name'] === '' || $data['link'] === '' || $data['comment'] === '') {
+		if (
+			$data['name'] === ''
+			|| $data['link'] === ''
+			|| $data['comment'] === ''
+		) {
 			return 'Заполните обязательные поля.';
 		}
 
@@ -29,24 +33,27 @@ class AmbassadorshipAction extends Action
 			return 'Укажите почту или телефон для связи.';
 		}
 
-		if ($data['email'] !== '' && !is_email($data['email'])) {
+		if ($data['email'] !== '' && ! is_email($data['email'])) {
 			return 'Введите корректный e-mail.';
 		}
 
-		if (!$data['agreement']) {
+		if (! $data['agreement']) {
 			return 'Подтвердите согласие с условиями оферты.';
 		}
 
-		if ($data['email'] !== '' && Ambassadors::exists($data['email'])) {
+		if (
+			$data['email'] !== ''
+			&& Ambassador::exists($data['email'])
+		) {
 			return 'Вы уже подавали заявку с этой почтой.';
 		}
 
 		return null;
 	}
 
-	protected function persist(array $data): bool
+	protected function save(array $data): bool
 	{
-		return (bool) Ambassadors::create([
+		return (bool) Ambassador::create([
 			'name' => $data['name'],
 			'link' => $data['link'],
 			'email' => $data['email'],
@@ -55,9 +62,9 @@ class AmbassadorshipAction extends Action
 		]);
 	}
 
-	protected function notify(array $data): bool
+	protected function send(array $data): bool
 	{
-		if (empty($data['email'])) {
+		if ($data['email'] === '') {
 			return true;
 		}
 
@@ -66,22 +73,22 @@ class AmbassadorshipAction extends Action
 			$data['link'],
 			$data['comment'],
 			$data['email'],
-			$data['phone']
+			$data['phone'],
 		))->send($data['email']);
 	}
 
-	protected function persistErrorMessage(): string
+	protected function saveErrorMessage(): string
 	{
-		return 'Извините, но произошла ошибка при создании заявки. Сообщите нам и мы обязательно поможем!';
+		return 'Извините, но произошла ошибка при создании заявки. Сообщите нам, и мы обязательно поможем!';
 	}
 
-	protected function notifyErrorMessage(): string
+	protected function sendErrorMessage(): string
 	{
-		return 'По каким-то причинам не удалось отправить заявку, но Вы можете написать нам и мы обязательно решим проблему!';
+		return 'По каким-то причинам не удалось отправить заявку, но вы можете написать нам, и мы обязательно решим проблему!';
 	}
 
 	protected function successMessage(): string
 	{
-		return 'Спасибо! Ваша заявка отправлена — уже в ближайшее время мы с Вами свяжемся.';
+		return 'Спасибо! Ваша заявка отправлена — уже в ближайшее время мы с вами свяжемся.';
 	}
 }

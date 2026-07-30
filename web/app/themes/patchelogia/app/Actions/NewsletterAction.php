@@ -5,7 +5,7 @@ namespace App\Actions;
 use App\Mail\NewsletterMail;
 use App\Models\Newsletter;
 
-class NewsletterAction extends Action
+class NewsletterAction extends AbstractFormAction
 {
 	protected function sanitize(array $data): array
 	{
@@ -16,7 +16,7 @@ class NewsletterAction extends Action
 
 	protected function validate(array $data): ?string
 	{
-		if (empty($data['email'])) {
+		if ($data['email'] === '') {
 			return 'Увы, но не указана почта.';
 		}
 
@@ -25,7 +25,7 @@ class NewsletterAction extends Action
 		}
 
 		if (Newsletter::exists($data['email'])) {
-			return 'К сожалению, Вы уже подписаны на рассылку!';
+			return 'К сожалению, вы уже подписаны на рассылку!';
 		}
 
 		return null;
@@ -38,43 +38,46 @@ class NewsletterAction extends Action
 		return $data;
 	}
 
-	protected function persist(array $data): bool
+	protected function save(array $data): bool
 	{
-		return (bool) Newsletter::create([
+		return Newsletter::create([
 			'email' => $data['email'],
 			'promo_code' => $data['promo_code'],
-		]);
+		]) !== null;
 	}
 
-	protected function notify(array $data): bool
+	protected function send(array $data): bool
 	{
-		return (new NewsletterMail($data['promo_code']))->send($data['email']);
+		return (new NewsletterMail($data['promo_code']))
+			->send($data['email']);
 	}
 
-	protected function onNotifyFailed(array $data): void
+	protected function onSendFailed(array $data): void
 	{
 		Newsletter::delete($data['email']);
 	}
 
-	protected function persistErrorMessage(): string
+	protected function saveErrorMessage(): string
 	{
-		return 'Извините, но произошла ошибка при оформлении подписки. Сообщите нам и мы обязательно поможем!';
+		return 'Извините, но произошла ошибка при оформлении подписки. Сообщите нам, и мы обязательно поможем!';
 	}
 
-	protected function notifyErrorMessage(): string
+	protected function sendErrorMessage(): string
 	{
-		return 'По каким-то причинам не удалось отправить письмо, но Вы можете написать нам и мы обязательно решим проблему!';
+		return 'По каким-то причинам не удалось отправить письмо, но вы можете написать нам, и мы обязательно решим проблему!';
 	}
 
 	protected function successMessage(): string
 	{
-		return 'Промокод на скидку 10% отправлен на Вашу почту! Благодарим за Ваше доверие.';
+		return 'Промокод на скидку 10% отправлен на вашу почту! Благодарим за доверие.';
 	}
 
 	private function generatePromoCode(): string
 	{
 		do {
-			$code = 'PROMO' . strtoupper(wp_generate_password(6, false, false));
+			$code = 'PROMO' . strtoupper(
+				wp_generate_password(6, false, false)
+			);
 		} while (Newsletter::promoCodeExists($code));
 
 		return $code;

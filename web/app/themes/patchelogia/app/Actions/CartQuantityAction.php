@@ -2,16 +2,54 @@
 
 namespace App\Actions;
 
-class CartQuantityAction extends Action
+use WC_Product;
+
+class CartQuantityAction extends AbstractAction
 {
 	protected ?array $cartItem = null;
+
 	protected bool $removed = false;
+
+	public function handle(...$arguments): array
+	{
+		$data = $this->sanitize($arguments[0] ?? []);
+		$error = $this->validate($data);
+
+		if ($error !== null) {
+			return $this->error($error);
+		}
+
+		if (!$this->updateQuantity($data)) {
+			return $this->error('Не удалось обновить количество товара. Попробуйте ещё раз.');
+		}
+
+		return $this->success(
+			'',
+			[
+				'cart_item_key' => $data['cart_item_key'],
+				'removed' => $this->removed,
+				'subtotal' => $this->cartItem
+					? apply_filters(
+						'woocommerce_cart_item_subtotal',
+						WC()->cart->get_product_subtotal(
+							$this->cartItem['data'],
+							$this->cartItem['quantity'],
+						),
+						$this->cartItem,
+						$data['cart_item_key'],
+					)
+					: null,
+				'cart_totals_html' => view('woocommerce.cart.cart-totals')->render(),
+				'cart_count' => WC()->cart->get_cart_contents_count(),
+			]
+		);
+	}
 
 	protected function sanitize(array $data): array
 	{
 		return [
 			'cart_item_key' => sanitize_text_field($data['cart_item_key'] ?? ''),
-			'quantity'      => isset($data['quantity']) ? absint($data['quantity']) : 0,
+			'quantity' => max(0, absint($data['quantity'] ?? 0)),
 		];
 	}
 
@@ -23,10 +61,11 @@ class CartQuantityAction extends Action
 
 		$cartItem = WC()->cart->get_cart_item($data['cart_item_key']);
 
-		if (! $cartItem) {
+		if (!$cartItem) {
 			return 'Товар не найден в корзине.';
 		}
 
+		/** @var WC_Product $product */
 		$product = $cartItem['data'];
 
 		if ($product->is_sold_individually() && $data['quantity'] > 1) {
@@ -42,68 +81,27 @@ class CartQuantityAction extends Action
 		return null;
 	}
 
-	protected function persist(array $data): bool
+	protected function updateQuantity(array $data): bool
 	{
-		if ($data['quantity'] <= 0) {
+		if ($data['quantity'] === 0) {
 			$this->removed = WC()->cart->remove_cart_item($data['cart_item_key']);
 			$this->cartItem = null;
 		} else {
-			$updated = WC()->cart->set_quantity($data['cart_item_key'], $data['quantity'], true);
-			$this->cartItem = WC()->cart->get_cart_item($data['cart_item_key']);
+			$updated = WC()->cart->set_quantity(
+				$data['cart_item_key'],
+				$data['quantity'],
+				true,
+			);
 
 			if (! $updated) {
 				return false;
 			}
+
+			$this->cartItem = WC()->cart->get_cart_item($data['cart_item_key']);
 		}
 
 		WC()->cart->calculate_totals();
 
 		return true;
-	}
-
-	protected function notify(array $data): bool
-	{
-		// Уведомлений тут не требуется — шаг обязателен по контракту,
-		// просто подтверждаем успех.
-		return true;
-	}
-
-	protected function persistErrorMessage(): string
-	{
-		return 'Не удалось обновить количество товара. Попробуйте ещё раз.';
-	}
-
-	protected function notifyErrorMessage(): string
-	{
-		return '';
-	}
-
-	protected function successMessage(): string
-	{
-		return '';
-	}
-
-	/**
-	 * Extra data for the AJAX response, merged on top of handle()'s result
-	 * by AjaxHandler since it doesn't fit the success/message contract.
-	 */
-	public function payload(array $data): array
-	{
-		$cartItemKey = sanitize_text_field($data['cart_item_key'] ?? '');
-
-		return [
-			'cart_item_key' => $cartItemKey,
-			'removed'       => $this->removed,
-			'subtotal'      => $this->cartItem
-				? apply_filters(
-					'woocommerce_cart_item_subtotal',
-					WC()->cart->get_product_subtotal($this->cartItem['data'], $this->cartItem['quantity']),
-					$this->cartItem,
-					$cartItemKey,
-				)
-				: null,
-			'cart_totals_html' => view('woocommerce.cart.cart-totals')->render(),
-			'cart_count'        => WC()->cart->get_cart_contents_count(),
-		];
 	}
 }

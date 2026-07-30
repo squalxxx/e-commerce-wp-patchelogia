@@ -2,10 +2,10 @@
 
 namespace App\Actions;
 
-use App\Mail\FeedbacksMail;
-use App\Models\Feedbacks;
+use App\Mail\FeedbackMail;
+use App\Models\Feedback;
 
-class FeedbackAction extends Action
+class FeedbackAction extends AbstractFormAction
 {
 	protected function sanitize(array $data): array
 	{
@@ -20,15 +20,15 @@ class FeedbackAction extends Action
 
 	protected function validate(array $data): ?string
 	{
-		if (empty($data['name'])) {
-			return 'Укажите как к Вам обращаться в поле "Имя".';
+		if ($data['name'] === '') {
+			return 'Укажите как к Вам обращаться в поле «Имя».';
 		}
 
-		if (empty($data['email']) && empty($data['phone'])) {
-			return 'Пожалуйста, укажите как с Вами связаться в полях "Почта" или "Телефон".';
+		if ($data['email'] === '' && $data['phone'] === '') {
+			return 'Пожалуйста, укажите как с Вами связаться в полях «Почта» или «Телефон».';
 		}
 
-		if (!empty($data['email']) && !is_email($data['email'])) {
+		if ($data['email'] !== '' && !is_email($data['email'])) {
 			return 'Проверьте корректность указанной почты.';
 		}
 
@@ -39,9 +39,9 @@ class FeedbackAction extends Action
 		return null;
 	}
 
-	protected function persist(array $data): bool
+	protected function save(array $data): bool
 	{
-		return (bool) Feedbacks::create([
+		return (bool) Feedback::create([
 			'name' => $data['name'],
 			'email' => $data['email'],
 			'phone' => $data['phone'],
@@ -49,27 +49,28 @@ class FeedbackAction extends Action
 		]);
 	}
 
-	protected function notify(array $data): bool
+	protected function send(array $data): bool
 	{
-		if (empty($data['email'])) {
+		if ($data['email'] === '') {
 			return true;
 		}
 
-		return (new FeedbacksMail($data['name']))->send($data['email']);
+		return (new FeedbackMail($data['name']))
+			->send($data['email']);
 	}
 
-	protected function persistErrorMessage(): string
+	protected function saveErrorMessage(): string
 	{
-		return 'Извините, но произошла ошибка при создании заявки. Сообщите нам и мы обязательно поможем!';
+		return 'Извините, но произошла ошибка при создании заявки. Сообщите нам, и мы обязательно поможем!';
 	}
 
-	protected function notifyErrorMessage(): string
+	protected function sendErrorMessage(): string
 	{
-		return 'По каким-то причинам не удалось отправить заявку, но Вы можете написать нам и мы обязательно решим проблему!';
+		return 'По каким-то причинам не удалось отправить заявку, но вы можете написать нам, и мы обязательно решим проблему!';
 	}
 
 	protected function successMessage(): string
 	{
-		return 'Спасибо! Ваша заявка отправлена — уже в ближайшее время мы с Вами свяжемся.';
+		return 'Спасибо! Ваша заявка отправлена — уже в ближайшее время мы с вами свяжемся.';
 	}
 }
