@@ -35,8 +35,14 @@ function cartUpdated(event) {
 }
 
 function cartAdded(event) {
-	console.log(event.detail);
-	const { cart_item_key: key, message: message, cart_count: count, success: success } = event.detail.result;
+	const {
+		message,
+		success,
+		payload: {
+			cart_count: count,
+			cart_item_key: key,
+		} = {},
+	} = event.detail.result;
 
 	if (typeof count === 'number') {
 		document.querySelectorAll('[data-cart-count] [data-roll-item]').forEach((node) => {
