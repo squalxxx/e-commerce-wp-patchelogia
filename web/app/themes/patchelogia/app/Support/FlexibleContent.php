@@ -1,12 +1,5 @@
 <?php
 
-if (!function_exists('getOptionField')) {
-	function getOptionField(string $field): mixed
-	{
-		return get_field($field, 'option');
-	}
-}
-
 if (!function_exists('flexibleContentRender')) {
 	function flexibleContentRender(string $fieldName, int|string|null $postId = null): void
 	{

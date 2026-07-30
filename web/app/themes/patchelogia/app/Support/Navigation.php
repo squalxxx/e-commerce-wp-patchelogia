@@ -14,12 +14,10 @@ if (!function_exists('getMenu')) {
 
 		$menu = wp_get_nav_menu_object($locations[$location]);
 
-		$result = [
+		return [
 			'name' => $menu?->name ?? '',
 			'items' => wp_get_nav_menu_items($menu?->term_id ?? 0) ?: [],
 		];
-
-		return $result;
 	}
 }
 

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\View\Blocks\Block;
 use Roots\Acorn\Sage\SageServiceProvider;
+use Symfony\Component\Finder\Finder;
 
 class ThemeServiceProvider extends SageServiceProvider
 {
@@ -15,9 +17,10 @@ class ThemeServiceProvider extends SageServiceProvider
     {
         parent::register();
 
+        \App\Http\AjaxHandler::register();
+
         $this->registerPages();
         $this->registerBlocks();
-        $this->registerAjaxHandler();
     }
 
     /**
@@ -35,9 +38,9 @@ class ThemeServiceProvider extends SageServiceProvider
      */
     protected function registerPages(): void
     {
-        new \App\View\Admin\NewsletterPage();
-        new \App\View\Admin\FeedbacksPage();
-        new \App\View\Admin\AmbassadorshipPage();
+        app(\App\View\Admin\NewsletterPage::class);
+        app(\App\View\Admin\FeedbacksPage::class);
+        app(\App\View\Admin\AmbassadorshipPage::class);
     }
 
     /**
@@ -45,17 +48,14 @@ class ThemeServiceProvider extends SageServiceProvider
      */
     protected function registerBlocks(): void
     {
-        collect(glob(app_path('View/Blocks/*.php')))
-            ->map(fn($file) => 'App\\View\\Blocks\\' . basename($file, '.php'))
-            ->reject(fn($class) => $class === \App\View\Blocks\Block::class)
-            ->each(fn($class) => new $class());
-    }
-
-    /**
-     * Register the themes AJAX endpoints.
-     */
-    protected function registerAjaxHandler(): void
-    {
-        require_once app_path('Http/AjaxHandler.php');
+        collect(
+            Finder::create()
+                ->files()
+                ->in(app_path('View/Blocks'))
+                ->name('*.php')
+        )
+            ->map(fn($file) => 'App\\View\\Blocks\\' . $file->getBasename('.php'))
+            ->reject(fn($class) => $class === Block::class)
+            ->each(fn($class) => app($class));
     }
 }

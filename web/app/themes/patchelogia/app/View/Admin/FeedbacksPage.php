@@ -2,7 +2,7 @@
 
 namespace App\View\Admin;
 
-use App\Models\Feedbacks;
+use App\Models\Feedback;
 
 class FeedbacksPage
 {
@@ -29,7 +29,7 @@ class FeedbacksPage
 	public function render(): void
 	{
 		echo view('admin.feedbacks', [
-			'feedbacks' => Feedbacks::all(),
+			'feedbacks' => Feedback::all(),
 		]);
 	}
 }

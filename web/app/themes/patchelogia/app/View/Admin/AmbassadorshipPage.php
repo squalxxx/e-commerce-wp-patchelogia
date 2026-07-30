@@ -2,7 +2,7 @@
 
 namespace App\View\Admin;
 
-use App\Models\Ambassadors;
+use App\Models\Ambassador;
 
 class AmbassadorshipPage
 {
@@ -29,7 +29,7 @@ class AmbassadorshipPage
 	public function render(): void
 	{
 		echo view('admin.ambassadorship', [
-			'ambassadors' => Ambassadors::all(),
+			'ambassadors' => Ambassador::all(),
 		]);
 	}
 }

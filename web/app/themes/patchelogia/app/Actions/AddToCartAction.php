@@ -2,86 +2,78 @@
 
 namespace App\Actions;
 
-class AddToCartAction extends Action
+use WC_Product;
+
+class AddToCartAction extends AbstractAction
 {
 	protected ?string $cartItemKey = null;
+
+	public function handle(...$arguments): array
+	{
+		$data = $this->sanitize($arguments[0] ?? []);
+		$error = $this->validate($data);
+
+		if ($error !== null) {
+			return $this->error($error);
+		}
+
+		if (!$this->addToCart($data)) {
+			return $this->error('Не удалось добавить товар в корзину. Попробуйте ещё раз.');
+		}
+
+		return $this->success(
+			'Товар добавлен в корзину.',
+			[
+				'cart_item_key' => $this->cartItemKey,
+				'cart_count' => WC()->cart->get_cart_contents_count(),
+			]
+		);
+	}
 
 	protected function sanitize(array $data): array
 	{
 		return [
-			'product_id' => isset($data['product_id']) ? absint($data['product_id']) : 0,
-			'quantity'   => isset($data['quantity']) ? absint($data['quantity']) : 1,
+			'product_id' => absint($data['product_id'] ?? 0),
+			'quantity' => max(1, absint($data['quantity'] ?? 1)),
 		];
 	}
 
 	protected function validate(array $data): ?string
 	{
-		if ($data['product_id'] <= 0) {
-			return 'Товар не найден.';
-		}
-
 		$product = wc_get_product($data['product_id']);
 
-		if (! $product || ! $product->exists()) {
+		if (!$product instanceof WC_Product || !$product->exists()) {
 			return 'Товар не найден.';
 		}
 
-		if (! $product->is_purchasable()) {
+		if (!$product->is_purchasable()) {
 			return 'Этот товар недоступен для покупки.';
 		}
 
-		if (! $product->is_in_stock()) {
+		if (!$product->is_in_stock()) {
 			return 'Товара нет в наличии.';
 		}
 
-		$quantity = $data['quantity'] > 0 ? $data['quantity'] : 1;
-
-		if ($product->is_sold_individually() && $quantity > 1) {
+		if ($product->is_sold_individually() && $data['quantity'] > 1) {
 			return 'Этот товар можно добавить только в одном экземпляре.';
 		}
 
 		$maxQuantity = $product->get_max_purchase_quantity();
 
-		if ($maxQuantity > -1 && $quantity > $maxQuantity) {
+		if ($maxQuantity > -1 && $data['quantity'] > $maxQuantity) {
 			return sprintf('Доступно не более %d шт.', $maxQuantity);
 		}
 
 		return null;
 	}
 
-	protected function persist(array $data): bool
+	protected function addToCart(array $data): bool
 	{
-		$quantity = $data['quantity'] > 0 ? $data['quantity'] : 1;
-		$this->cartItemKey = WC()->cart->add_to_cart($data['product_id'], $quantity);
+		$this->cartItemKey = WC()->cart->add_to_cart(
+			$data['product_id'],
+			$data['quantity']
+		);
 
-		return (bool) $this->cartItemKey;
-	}
-
-	protected function notify(array $data): bool
-	{
-		return true;
-	}
-
-	protected function persistErrorMessage(): string
-	{
-		return 'Не удалось добавить товар в корзину. Попробуйте ещё раз.';
-	}
-
-	protected function notifyErrorMessage(): string
-	{
-		return '';
-	}
-
-	protected function successMessage(): string
-	{
-		return 'Товар добавлен в корзину.';
-	}
-
-	public function payload(): array
-	{
-		return [
-			'cart_item_key' => $this->cartItemKey,
-			'cart_count' => WC()->cart->get_cart_contents_count(),
-		];
+		return $this->cartItemKey !== null;
 	}
 }
