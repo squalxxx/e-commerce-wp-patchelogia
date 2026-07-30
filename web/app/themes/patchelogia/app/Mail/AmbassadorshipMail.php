@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-class AmbassadorshipMail extends Mailable
+class AmbassadorshipMail extends AbstractMailable
 {
 	public function __construct(
 		string $name,

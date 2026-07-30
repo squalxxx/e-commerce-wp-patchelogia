@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-class NewsletterMail extends Mailable
+class NewsletterMail extends AbstractMailable
 {
 	public function __construct(string $promoCode)
 	{

@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-class FeedbacksMail extends Mailable
+class FeedbackMail extends AbstractMailable
 {
 	public function __construct(string $name)
 	{
