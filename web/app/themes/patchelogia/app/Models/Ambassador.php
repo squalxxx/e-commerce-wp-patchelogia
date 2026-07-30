@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-class Feedbacks
+class Ambassador
 {
 	protected static function tableName(): string
 	{
 		global $wpdb;
 
-		return $wpdb->prefix . 'feedbacks';
+		return $wpdb->prefix . 'ambassadors';
 	}
 
 	public static function createTable(): void
@@ -24,9 +24,10 @@ class Feedbacks
 					id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
 					name VARCHAR(255) NOT NULL,
+					link VARCHAR(255) NOT NULL,
+					comment TEXT NOT NULL,
 					email VARCHAR(255) DEFAULT NULL,
 					phone VARCHAR(50) DEFAULT NULL,
-					comment TEXT DEFAULT NULL,
 
 					created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -44,19 +45,24 @@ class Feedbacks
 			self::tableName(),
 			[
 				'name' => $data['name'],
-				'email' => $data['email'],
-				'phone' => $data['phone'],
+				'link' => $data['link'],
 				'comment' => $data['comment'],
+				'email' => $data['email'] ?: null,
+				'phone' => $data['phone'] ?: null,
 
 				'created_at' => current_time('mysql'),
 			],
-			['%s', '%s', '%s', '%s', '%s']
+			['%s', '%s', '%s', '%s', '%s', '%s']
 		);
 	}
 
 	public static function exists(string $email): bool
 	{
 		global $wpdb;
+
+		if ($email === '') {
+			return false;
+		}
 
 		return (bool) $wpdb->get_var(
 			$wpdb->prepare(
